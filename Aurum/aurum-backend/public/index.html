@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurum – Italian Fine Dining</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #C9A84C; --gold-light: #E8C96A; --gold-pale: #F5E8C0;
+    --black: #0A0A0A; --black-soft: #111111; --charcoal: #1A1A1A;
+    --gray: #888; --off-white: #F7F3EC;
+    --font-display: 'Cormorant Garamond', serif;
+    --font-body: 'Montserrat', sans-serif;
+    --api: 'https://your-backend.onrender.com';
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--black); color: var(--off-white); font-family: var(--font-body); font-weight: 300; overflow-x: hidden; }
+
+  /* NAV */
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 4rem; background: linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, transparent 100%); transition: background 0.4s; }
+  nav.scrolled { background: rgba(10,10,10,0.97); border-bottom: 0.5px solid rgba(201,168,76,0.2); }
+  .nav-logo { font-family: var(--font-display); font-size: 1.8rem; font-weight: 400; letter-spacing: 0.12em; color: var(--gold); text-decoration: none; }
+  .nav-logo span { font-style: italic; color: var(--off-white); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a { font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--off-white); text-decoration: none; opacity: 0.8; transition: color 0.3s, opacity 0.3s; }
+  .nav-links a:hover { color: var(--gold); opacity: 1; }
+  .nav-reserve { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; border: 0.5px solid var(--gold); color: var(--gold); padding: 0.55rem 1.4rem; text-decoration: none; transition: background 0.3s, color 0.3s; }
+  .nav-reserve:hover { background: var(--gold); color: var(--black); }
+
+  /* HERO */
+  #hero { position: relative; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; text-align: center; }
+  .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 60% 40%, rgba(201,168,76,0.07) 0%, transparent 60%), radial-gradient(ellipse at 20% 70%, rgba(201,168,76,0.04) 0%, transparent 50%), linear-gradient(160deg, #0f0e0b 0%, #0A0A0A 50%, #0d0c09 100%); }
+  .hero-pattern { position: absolute; inset: 0; opacity: 0.035; background-image: repeating-linear-gradient(0deg, var(--gold) 0px, var(--gold) 1px, transparent 1px, transparent 60px), repeating-linear-gradient(90deg, var(--gold) 0px, var(--gold) 1px, transparent 1px, transparent 60px); }
+  .hero-ornament { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; border-radius: 50%; border: 0.5px solid rgba(201,168,76,0.1); animation: pulse-ring 4s ease-in-out infinite; }
+  .hero-ornament::before { content: ''; position: absolute; inset: 40px; border-radius: 50%; border: 0.5px solid rgba(201,168,76,0.07); }
+  @keyframes pulse-ring { 0%,100% { opacity:0.4; transform:translate(-50%,-50%) scale(1); } 50% { opacity:0.8; transform:translate(-50%,-50%) scale(1.02); } }
+  .hero-content { position: relative; z-index: 2; }
+  .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 1s 0.3s forwards; }
+  .hero-title { font-family: var(--font-display); font-size: clamp(5rem, 12vw, 10rem); font-weight: 300; line-height: 0.9; color: var(--off-white); letter-spacing: 0.05em; opacity: 0; animation: fadeUp 1s 0.6s forwards; }
+  .hero-title em { font-style: italic; color: var(--gold); display: block; }
+  .hero-subtitle { font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gray); margin-top: 1.5rem; opacity: 0; animation: fadeUp 1s 0.9s forwards; }
+
+  /* open/closed badge */
+  .open-badge { display: inline-block; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; padding: 4px 12px; border-radius: 0; margin-top: 0.75rem; opacity: 0; animation: fadeUp 1s 1s forwards; }
+  .open-badge.open { background: rgba(29,158,117,0.15); color: #1D9E75; border: 0.5px solid rgba(29,158,117,0.3); }
+  .open-badge.closed { background: rgba(192,57,43,0.1); color: #c0392b; border: 0.5px solid rgba(192,57,43,0.25); }
+
+  .hero-divider { width: 60px; height: 0.5px; background: var(--gold); margin: 2rem auto; opacity: 0; animation: fadeUp 1s 1.1s forwards; }
+  .hero-cta { display: inline-block; margin-top: 0.5rem; font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--black); background: var(--gold); padding: 1rem 2.5rem; text-decoration: none; transition: background 0.3s; opacity: 0; animation: fadeUp 1s 1.3s forwards; }
+  .hero-cta:hover { background: var(--gold-light); }
+  .hero-scroll { position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%); font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gray); display: flex; flex-direction: column; align-items: center; gap: 0.75rem; opacity: 0; animation: fadeUp 1s 1.6s forwards; }
+  .hero-scroll::after { content: ''; display: block; width: 0.5px; height: 40px; background: linear-gradient(to bottom, var(--gold), transparent); animation: scrollLine 2s ease-in-out infinite; }
+  @keyframes scrollLine { 0%,100% { transform:scaleY(1); opacity:1; } 50% { transform:scaleY(0.5); opacity:0.4; } }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+  /* SECTIONS */
+  section { padding: 7rem 4rem; }
+  .section-label { font-size: 0.6rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .section-title { font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 300; line-height: 1.1; color: var(--off-white); }
+  .section-title em { font-style: italic; color: var(--gold); }
+  .gold-line { width: 50px; height: 0.5px; background: var(--gold); margin: 1.5rem 0; }
+  .center { text-align: center; }
+  .center .gold-line { margin: 1.5rem auto; }
+
+  /* ABOUT */
+  #about { background: var(--black-soft); }
+  .about-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; }
+  .about-visual { position: relative; height: 500px; }
+  .about-frame { position: absolute; inset: 0; border: 0.5px solid rgba(201,168,76,0.3); transform: rotate(2deg); }
+  .about-frame-inner { position: absolute; inset: 20px; background: linear-gradient(135deg, rgba(201,168,76,0.08) 0%, transparent 60%), var(--charcoal); display: flex; align-items: center; justify-content: center; }
+  .about-monogram { font-family: var(--font-display); font-size: 10rem; font-weight: 300; color: rgba(201,168,76,0.15); line-height: 1; font-style: italic; user-select: none; }
+  .about-badge { position: absolute; bottom: -20px; right: -20px; width: 110px; height: 110px; border-radius: 50%; background: var(--gold); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .about-badge span { font-family: var(--font-display); font-size: 2rem; font-weight: 600; color: var(--black); line-height: 1; }
+  .about-badge small { font-size: 0.5rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--black); opacity: 0.7; }
+  .about-text p { font-size: 0.9rem; line-height: 1.9; color: rgba(247,243,236,0.7); margin-bottom: 1.2rem; }
+  .about-stats { display: flex; gap: 2.5rem; margin-top: 2rem; padding-top: 2rem; border-top: 0.5px solid rgba(201,168,76,0.2); }
+  .stat-num { font-family: var(--font-display); font-size: 2.5rem; font-weight: 300; color: var(--gold); line-height: 1; }
+  .stat-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray); margin-top: 0.3rem; }
+
+  /* MENU */
+  #menu { background: var(--black); }
+  .menu-inner { max-width: 1100px; margin: 0 auto; }
+  .menu-tabs { display: flex; gap: 0; margin: 3rem 0 2rem; border-bottom: 0.5px solid rgba(201,168,76,0.2); }
+  .tab-btn { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; padding: 0.75rem 1.5rem; border: none; background: none; cursor: pointer; color: var(--gray); border-bottom: 1.5px solid transparent; margin-bottom: -0.5px; transition: color 0.3s, border-color 0.3s; font-family: var(--font-body); }
+  .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .tab-btn:hover { color: var(--off-white); }
+  .menu-panel { display: none; }
+  .menu-panel.active { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .menu-item { padding: 1.5rem 0; border-bottom: 0.5px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+  .menu-item:nth-child(odd) { padding-right: 2rem; border-right: 0.5px solid rgba(255,255,255,0.05); }
+  .menu-item:nth-child(even) { padding-left: 2rem; }
+  .menu-item-name { font-family: var(--font-display); font-size: 1.1rem; font-weight: 400; color: var(--off-white); }
+  .menu-item-desc { font-size: 0.68rem; letter-spacing: 0.05em; color: var(--gray); margin-top: 0.25rem; line-height: 1.6; }
+  .menu-item-price { font-family: var(--font-display); font-size: 1rem; color: var(--gold); white-space: nowrap; }
+  .menu-loading { text-align: center; padding: 3rem; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray); }
+
+  /* GALLERY */
+  #gallery { background: var(--black-soft); }
+  .gallery-grid { max-width: 1100px; margin: 3rem auto 0; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 200px 200px; gap: 8px; }
+  .gallery-item { overflow: hidden; position: relative; cursor: pointer; background: var(--charcoal); }
+  .gallery-item:first-child { grid-column: span 2; grid-row: span 2; }
+  .gallery-item:nth-child(4) { grid-column: span 2; }
+  .gallery-inner { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; transition: transform 0.5s ease; }
+  .gallery-item:hover .gallery-inner { transform: scale(1.05); }
+  .gallery-inner img { width: 100%; height: 100%; object-fit: cover; }
+  .gallery-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, var(--charcoal) 0%, rgba(201,168,76,0.06) 100%); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-style: italic; font-size: 1rem; color: rgba(201,168,76,0.3); }
+  .gallery-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+  .gallery-item:hover .gallery-overlay { opacity: 1; }
+  .gallery-overlay span { font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); border: 0.5px solid var(--gold); padding: 0.5rem 1rem; }
+
+  /* TESTIMONIALS */
+  #testimonials { background: var(--black); }
+  .testi-inner { max-width: 900px; margin: 3rem auto 0; }
+  .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .testi-card { padding: 2rem; border: 0.5px solid rgba(201,168,76,0.15); position: relative; }
+  .testi-card::before { content: '"'; position: absolute; top: 1rem; left: 1.5rem; font-family: var(--font-display); font-size: 5rem; line-height: 1; color: rgba(201,168,76,0.12); pointer-events: none; }
+  .testi-stars { color: var(--gold); font-size: 0.7rem; letter-spacing: 0.15em; margin-bottom: 1rem; }
+  .testi-text { font-size: 0.82rem; line-height: 1.8; color: rgba(247,243,236,0.65); margin-bottom: 1.5rem; font-style: italic; }
+  .testi-author { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); }
+  .testi-origin { font-size: 0.58rem; letter-spacing: 0.1em; color: var(--gray); margin-top: 0.2rem; }
+
+  /* CONTACT */
+  #contact { background: var(--black-soft); }
+  .contact-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; }
+  .contact-detail { margin-bottom: 2rem; }
+  .contact-detail-label { font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+  .contact-detail-val { font-family: var(--font-display); font-size: 1.1rem; color: var(--off-white); line-height: 1.6; }
+  .form-row { margin-bottom: 1.2rem; }
+  .form-row input, .form-row textarea, .form-row select { width: 100%; background: rgba(255,255,255,0.03); border: 0.5px solid rgba(201,168,76,0.25); color: var(--off-white); font-family: var(--font-body); font-size: 0.78rem; font-weight: 300; padding: 0.9rem 1rem; outline: none; transition: border-color 0.3s; letter-spacing: 0.05em; }
+  .form-row input::placeholder, .form-row textarea::placeholder { color: rgba(255,255,255,0.25); }
+  .form-row input:focus, .form-row textarea:focus, .form-row select:focus { border-color: var(--gold); }
+  .form-row textarea { resize: vertical; min-height: 110px; }
+  .form-row-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  select option { background: #1a1a1a; }
+  .btn-submit { font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--black); background: var(--gold); border: none; padding: 1rem 2.5rem; cursor: pointer; transition: background 0.3s; font-family: var(--font-body); font-weight: 500; margin-top: 0.5rem; width: 100%; }
+  .btn-submit:hover { background: var(--gold-light); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .form-msg { padding: 0.75rem 1rem; margin-top: 1rem; font-size: 0.72rem; letter-spacing: 0.05em; display: none; }
+  .form-msg.success { background: rgba(29,158,117,0.1); border: 0.5px solid rgba(29,158,117,0.3); color: #1D9E75; display: block; }
+  .form-msg.error { background: rgba(192,57,43,0.1); border: 0.5px solid rgba(192,57,43,0.3); color: #c0392b; display: block; }
+  .map-container { margin-top: 2rem; height: 200px; background: var(--charcoal); border: 0.5px solid rgba(201,168,76,0.15); overflow: hidden; position: relative; }
+  .map-container iframe { width: 100%; height: 100%; border: none; filter: grayscale(1) invert(0.85) contrast(1.1); }
+  .map-fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 0.5rem; }
+  .map-grid-bg { position: absolute; inset: 0; opacity: 0.15; background-image: repeating-linear-gradient(0deg, var(--gold) 0, var(--gold) 1px, transparent 1px, transparent 30px), repeating-linear-gradient(90deg, var(--gold) 0, var(--gold) 1px, transparent 1px, transparent 30px); }
+  .map-pin-icon { font-size: 1.5rem; }
+  .map-pin-label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); }
+  .location-select { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+  .loc-btn { font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; border: 0.5px solid rgba(201,168,76,0.3); color: var(--gray); background: none; padding: 0.4rem 0.9rem; cursor: pointer; transition: all 0.2s; font-family: var(--font-body); }
+  .loc-btn.active { border-color: var(--gold); color: var(--gold); }
+  .whatsapp-btn { display: inline-flex; align-items: center; gap: 0.6rem; margin-top: 1.5rem; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--black); background: #25D366; padding: 0.75rem 1.5rem; text-decoration: none; transition: opacity 0.3s; }
+  .whatsapp-btn:hover { opacity: 0.9; }
+
+  /* FOOTER */
+  footer { background: var(--black); border-top: 0.5px solid rgba(201,168,76,0.15); padding: 3rem 4rem; display: flex; justify-content: space-between; align-items: center; }
+  .footer-logo { font-family: var(--font-display); font-size: 1.4rem; font-weight: 300; color: var(--gold); letter-spacing: 0.1em; }
+  .footer-copy { font-size: 0.6rem; letter-spacing: 0.15em; color: var(--gray); }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); text-decoration: none; transition: color 0.3s; }
+  .footer-links a:hover { color: var(--gold); }
+
+  /* SCROLL REVEAL */
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    nav { padding: 1.2rem 1.5rem; }
+    .nav-links { display: none; }
+    section { padding: 5rem 1.5rem; }
+    .about-grid, .contact-inner { grid-template-columns: 1fr; gap: 3rem; }
+    .about-visual { height: 280px; }
+    .menu-panel.active { grid-template-columns: 1fr; }
+    .menu-item:nth-child(odd) { padding-right: 0; border-right: none; }
+    .menu-item:nth-child(even) { padding-left: 0; }
+    .testi-grid { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 160px); }
+    .gallery-item:first-child { grid-column: span 2; grid-row: span 1; }
+    .gallery-item:nth-child(4) { grid-column: span 1; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+    .form-row-duo { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── CONFIG: Set your backend URL here ── -->
+<script>
+  const API_BASE = 'https://your-backend.onrender.com'; // ← CHANGE THIS after deploying backend
+</script>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a class="nav-logo" href="#hero">Aurum <span>Ristorante</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">Our Story</a></li>
+    <li><a href="#menu">Menu</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#testimonials">Reviews</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a class="nav-reserve" href="#contact">Reserve a Table</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-pattern"></div>
+  <div class="hero-ornament"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Est. 2012 · Milan – Paris</p>
+    <h1 class="hero-title">Aurum<em>Ristorante</em></h1>
+    <p class="hero-subtitle">Italian Fine Dining &nbsp;·&nbsp; Mediterranean Soul</p>
+    <div id="open-status"></div>
+    <div class="hero-divider"></div>
+    <a class="hero-cta" href="#menu">Explore the Menu</a>
+  </div>
+  <div class="hero-scroll">Scroll</div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid">
+    <div class="about-visual reveal">
+      <div class="about-frame"></div>
+      <div class="about-frame-inner"><div class="about-monogram">A</div></div>
+      <div class="about-badge"><span>12</span><small>Years of<br>Excellence</small></div>
+    </div>
+    <div class="about-text reveal">
+      <p class="section-label">Our Story</p>
+      <h2 class="section-title">Where Tradition<br>Meets <em>Refinement</em></h2>
+      <div class="gold-line"></div>
+      <p>Aurum was born from a simple conviction: that Italian cuisine, at its purest, is the most expressive food in the world. Founded by Chef Marco Castellini in the heart of Milan, we brought that conviction across the Mediterranean and beyond.</p>
+      <p>Every plate is composed with ingredients sourced from family-owned farms in Tuscany, Sardinia, and the Amalfi Coast — flown in twice weekly to ensure nothing is ever less than perfect.</p>
+      <div class="about-stats">
+        <div class="stat-item"><div class="stat-num">3</div><div class="stat-label">Michelin Stars</div></div>
+        <div class="stat-item"><div class="stat-num">47</div><div class="stat-label">Signature Dishes</div></div>
+        <div class="stat-item"><div class="stat-num">200+</div><div class="stat-label">Wines Curated</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MENU — loaded live from API -->
+<section id="menu">
+  <div class="menu-inner">
+    <div class="center reveal">
+      <p class="section-label">Curated Selections</p>
+      <h2 class="section-title">Our <em>Menu</em></h2>
+      <div class="gold-line"></div>
+    </div>
+    <div class="menu-tabs" id="menu-tabs"></div>
+    <div id="menu-panels"><div class="menu-loading">Loading menu…</div></div>
+  </div>
+</section>
+
+<!-- GALLERY — loaded live from API -->
+<section id="gallery">
+  <div class="center reveal">
+    <p class="section-label">Moments at Aurum</p>
+    <h2 class="section-title">The <em>Gallery</em></h2>
+    <div class="gold-line"></div>
+  </div>
+  <div class="gallery-grid reveal" id="gallery-grid">
+    <!-- filled by JS -->
+    <div class="gallery-item"><div class="gallery-inner"><div class="gallery-placeholder">The Dining Room</div></div></div>
+    <div class="gallery-item"><div class="gallery-inner"><div class="gallery-placeholder">Antipasti</div></div></div>
+    <div class="gallery-item"><div class="gallery-inner"><div class="gallery-placeholder">Wine Cellar</div></div></div>
+    <div class="gallery-item"><div class="gallery-inner"><div class="gallery-placeholder">Chef's Table</div></div></div>
+    <div class="gallery-item"><div class="gallery-inner"><div class="gallery-placeholder">Dolci</div></div></div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="center reveal">
+    <p class="section-label">What Guests Say</p>
+    <h2 class="section-title">The <em>Experience</em></h2>
+    <div class="gold-line"></div>
+  </div>
+  <div class="testi-inner">
+    <div class="testi-grid reveal">
+      <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-text">Possibly the finest Italian restaurant outside of Italy. The truffle tagliolini alone is worth flying for. An evening at Aurum is an evening you simply don't forget.</p><div class="testi-author">Isabelle Moreau</div><div class="testi-origin">Paris, France</div></div>
+      <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-text">Every detail — from the candlelight to the Barolo selection — is considered. Chef Castellini came to our table and spoke about each dish with such passion. Extraordinary.</p><div class="testi-author">James & Harriet Whitmore</div><div class="testi-origin">London, United Kingdom</div></div>
+      <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-text">We celebrated our anniversary here and it was flawless. The burrata with truffle, the sea bass, the tiramisù — each course felt like a small work of art. We will return.</p><div class="testi-author">Sofia & Luca De Angelis</div><div class="testi-origin">Rome, Italy</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-inner">
+    <div class="reveal">
+      <p class="section-label">Find Us</p>
+      <h2 class="section-title">Reserve Your <em>Table</em></h2>
+      <div class="gold-line"></div>
+
+      <!-- Location switcher -->
+      <div class="location-select" style="margin-top:2rem;">
+        <button class="loc-btn active" onclick="switchLocation('milan',this)">Milan</button>
+        <button class="loc-btn" onclick="switchLocation('paris',this)">Paris</button>
+      </div>
+
+      <div id="location-info">
+        <div class="contact-detail"><div class="contact-detail-label">Address</div><div class="contact-detail-val" id="loc-address">12 Via della Luce, Milan 20121</div></div>
+        <div class="contact-detail"><div class="contact-detail-label">Hours</div><div class="contact-detail-val" id="loc-hours">Tue – Sun · 12:00–15:00, 19:00–23:30</div></div>
+        <div class="contact-detail"><div class="contact-detail-label">Phone</div><div class="contact-detail-val" id="loc-phone">+39 02 8765 4321</div></div>
+        <div id="loc-status" style="margin-top:0.5rem;font-size:0.65rem;letter-spacing:0.15em;color:var(--gray);"></div>
+      </div>
+
+      <a class="whatsapp-btn" id="whatsapp-link" href="https://wa.me/390287654321" target="_blank">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.139.563 4.144 1.544 5.879L0 24l6.293-1.519A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.881 0-3.636-.502-5.148-1.373l-.369-.22-3.736.902.937-3.626-.241-.384A9.944 9.944 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+        WhatsApp Us
+      </a>
+
+      <div class="map-container" id="map-container">
+        <div class="map-fallback">
+          <div class="map-grid-bg"></div>
+          <span class="map-pin-icon">◈</span>
+          <span class="map-pin-label" id="map-label">12 Via della Luce · Milano</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESERVATION FORM -->
+    <div class="reveal">
+      <p class="section-label" style="margin-top:4.5rem;">Make a Reservation</p>
+      <form id="reservation-form" onsubmit="submitReservation(event)">
+        <div class="form-row form-row-duo">
+          <input type="text" name="firstName" placeholder="First Name" required>
+          <input type="text" name="lastName" placeholder="Last Name" required>
+        </div>
+        <div class="form-row">
+          <input type="email" name="email" placeholder="Email Address" required>
+        </div>
+        <div class="form-row">
+          <input type="tel" name="phone" placeholder="Phone Number (optional)">
+        </div>
+        <div class="form-row form-row-duo">
+          <input type="date" name="date" required>
+          <input type="number" name="guests" placeholder="Guests" min="1" max="20" required>
+        </div>
+        <div class="form-row">
+          <input type="time" name="time" required>
+        </div>
+        <div class="form-row">
+          <select name="occasion">
+            <option value="none">No special occasion</option>
+            <option value="anniversary">Anniversary</option>
+            <option value="birthday">Birthday</option>
+            <option value="business">Business dinner</option>
+            <option value="proposal">Proposal</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <textarea name="requests" placeholder="Special requests, dietary requirements…"></textarea>
+        </div>
+        <button type="submit" class="btn-submit" id="reserve-btn">Request Reservation →</button>
+        <div class="form-msg" id="reserve-msg"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Aurum</div>
+  <div class="footer-copy">© 2026 Aurum Ristorante. All rights reserved.</div>
+  <div class="footer-links">
+    <a href="#about">Story</a>
+    <a href="#menu">Menu</a>
+    <a href="#contact">Contact</a>
+  </div>
+</footer>
+
+<script>
+// ── Navbar scroll
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 60));
+
+// ── Scroll reveal
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── LIVE OPEN/CLOSED STATUS ──────────────────────────────
+async function loadOpenStatus() {
+  try {
+    const res = await fetch(`${API_BASE}/api/locations/milan/hours`);
+    const data = await res.json();
+    const el = document.getElementById('open-status');
+    if (data.success) {
+      el.innerHTML = `<span class="open-badge ${data.isOpen ? 'open' : 'closed'}">${data.isOpen ? '● Open now' : '● Currently closed'}</span>`;
+    }
+  } catch {}
+}
+loadOpenStatus();
+
+// ── LOAD MENU FROM API ───────────────────────────────────
+async function loadMenu() {
+  try {
+    const res  = await fetch(`${API_BASE}/api/menu`);
+    const data = await res.json();
+    if (!data.success) throw new Error();
+
+    const catLabels = { antipasti: 'Antipasti', primi: 'Primi Piatti', secondi: 'Secondi', dolci: 'Dolci', bevande: 'Bevande' };
+    const cats = Object.keys(data.menu);
+    const tabsEl   = document.getElementById('menu-tabs');
+    const panelsEl = document.getElementById('menu-panels');
+    tabsEl.innerHTML = '';
+    panelsEl.innerHTML = '';
+
+    cats.forEach((cat, i) => {
+      // Tab button
+      const btn = document.createElement('button');
+      btn.className = `tab-btn${i === 0 ? ' active' : ''}`;
+      btn.textContent = catLabels[cat] || cat;
+      btn.dataset.tab = cat;
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.menu-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${cat}`).classList.add('active');
+      });
+      tabsEl.appendChild(btn);
+
+      // Panel
+      const panel = document.createElement('div');
+      panel.className = `menu-panel${i === 0 ? ' active' : ''}`;
+      panel.id = `tab-${cat}`;
+      panel.innerHTML = data.menu[cat].map(item => `
+        <div class="menu-item">
+          <div class="menu-item-info">
+            <div class="menu-item-name">${item.name}</div>
+            <div class="menu-item-desc">${item.description}</div>
+          </div>
+          <div class="menu-item-price">€${item.price.toFixed(2)}</div>
+        </div>`).join('');
+      panelsEl.appendChild(panel);
+    });
+  } catch {
+    // Fallback to static menu if API unavailable
+    document.getElementById('menu-panels').innerHTML = `<p style="text-align:center;color:var(--gray);padding:2rem;font-size:0.8rem;">Menu temporarily unavailable. Please call us.</p>`;
+  }
+}
+loadMenu();
+
+// ── LOAD GALLERY FROM API ────────────────────────────────
+async function loadGallery() {
+  try {
+    const res  = await fetch(`${API_BASE}/api/gallery`);
+    const data = await res.json();
+    if (!data.success || !data.images.length) return;
+
+    const grid = document.getElementById('gallery-grid');
+    grid.innerHTML = data.images.slice(0, 5).map((img, i) => `
+      <div class="gallery-item">
+        <div class="gallery-inner">
+          <img src="${img.url}" alt="${img.title}" loading="lazy">
+        </div>
+        <div class="gallery-overlay"><span>View</span></div>
+      </div>`).join('');
+  } catch {}
+}
+loadGallery();
+
+// ── LOCATION SWITCHER ────────────────────────────────────
+const locationData = {
+  milan: {
+    address: '12 Via della Luce, Milan 20121, Italy',
+    hours: 'Tue – Sun · 12:00–15:00 &nbsp;·&nbsp; 19:00–23:30',
+    phone: '+39 02 8765 4321',
+    whatsapp: 'https://wa.me/390287654321',
+    mapLabel: '12 Via della Luce · Milano',
+    locationId: 'milan',
+  },
+  paris: {
+    address: '5 Rue Saint-Honoré, Paris 75001, France',
+    hours: 'Tue – Sun · 12:00–14:30 &nbsp;·&nbsp; 19:00–23:00',
+    phone: '+33 1 4265 1234',
+    whatsapp: 'https://wa.me/33142651234',
+    mapLabel: '5 Rue Saint-Honoré · Paris',
+    locationId: 'paris',
+  },
+};
+
+async function switchLocation(id, btn) {
+  document.querySelectorAll('.loc-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const loc = locationData[id];
+  document.getElementById('loc-address').textContent = loc.address;
+  document.getElementById('loc-hours').innerHTML = loc.hours;
+  document.getElementById('loc-phone').textContent = loc.phone;
+  document.getElementById('whatsapp-link').href = loc.whatsapp;
+  document.getElementById('map-label').textContent = loc.mapLabel;
+
+  // Fetch live hours status
+  try {
+    const res  = await fetch(`${API_BASE}/api/locations/${id}/hours`);
+    const data = await res.json();
+    const statusEl = document.getElementById('loc-status');
+    if (data.success) {
+      statusEl.textContent = data.isOpen
+        ? `● Open now (${data.currentSession})`
+        : '● Currently closed';
+      statusEl.style.color = data.isOpen ? '#1D9E75' : 'var(--gray)';
+    }
+  } catch {}
+}
+
+// Init status for Milan
+(async () => {
+  try {
+    const res  = await fetch(`${API_BASE}/api/locations/milan/hours`);
+    const data = await res.json();
+    const el   = document.getElementById('loc-status');
+    if (data.success) {
+      el.textContent = data.isOpen ? `● Open now (${data.currentSession})` : '● Currently closed';
+      el.style.color = data.isOpen ? '#1D9E75' : 'var(--gray)';
+    }
+  } catch {}
+})();
+
+// ── RESERVATION FORM SUBMIT ──────────────────────────────
+async function submitReservation(e) {
+  e.preventDefault();
+  const btn = document.getElementById('reserve-btn');
+  const msg = document.getElementById('reserve-msg');
+  const form = document.getElementById('reservation-form');
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  msg.className = 'form-msg';
+  msg.style.display = 'none';
+
+  const formData = new FormData(form);
+  const body = Object.fromEntries(formData.entries());
+
+  try {
+    const res  = await fetch(`${API_BASE}/api/reservations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      msg.className = 'form-msg success';
+      msg.textContent = `✓ ${data.message} Confirmation ID: ${data.confirmationId}`;
+      form.reset();
+    } else {
+      const errText = data.errors ? data.errors.map(e => e.msg).join(', ') : data.message;
+      msg.className = 'form-msg error';
+      msg.textContent = errText || 'Something went wrong. Please try again.';
+    }
+  } catch {
+    msg.className = 'form-msg error';
+    msg.textContent = 'Connection error. Please call us directly at +39 02 8765 4321';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Request Reservation →';
+  }
+}
+
+// Set minimum date to today
+document.querySelector('input[name="date"]').min = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
