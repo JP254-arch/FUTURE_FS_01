@@ -1,0 +1,108 @@
+/* ═══════════════════════════════════════════════
+   AURUM — Contact Page Styles
+   ═══════════════════════════════════════════════ */
+
+/* ── LOCATION BAR ────────────────────────────── */
+.location-bar {
+  background: var(--charcoal);
+  border-bottom: 0.5px solid rgba(201,168,76,0.15);
+  padding: 0 4rem;
+}
+.location-bar-inner { display: flex; }
+.loc-tab {
+  display: flex; flex-direction: column; gap: 0.15rem;
+  padding: 1.25rem 2rem; border: none; background: none; cursor: pointer;
+  border-bottom: 1.5px solid transparent; margin-bottom: -0.5px;
+  text-align: left; transition: border-color 0.3s;
+}
+.loc-tab.active { border-bottom-color: var(--gold); }
+.loc-tab-city {
+  font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--off-white); font-family: var(--font-body);
+  transition: color 0.3s;
+}
+.loc-tab.active .loc-tab-city { color: var(--gold); }
+.loc-tab-addr {
+  font-size: 0.58rem; letter-spacing: 0.1em;
+  color: var(--gray); font-family: var(--font-body);
+}
+
+/* ── CONTACT SECTION ─────────────────────────── */
+#contact-section { background: var(--black); }
+.contact-grid {
+  display: grid; grid-template-columns: 1fr 1.2fr;
+  gap: 6rem; align-items: start;
+}
+
+/* ── INFO BLOCKS ─────────────────────────────── */
+.info-block { margin-bottom: 2rem; }
+.info-label {
+  font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 0.5rem;
+}
+.info-value {
+  font-family: var(--font-display); font-size: 1.05rem; color: var(--off-white);
+  line-height: 1.7;
+}
+.info-value a { color: var(--off-white); transition: color 0.2s; }
+.info-value a:hover { color: var(--gold); }
+
+/* Live status */
+.info-status {
+  margin-bottom: 0.5rem;
+  font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+  min-height: 20px;
+}
+.status-open   { color: var(--success); }
+.status-closed { color: var(--gray); }
+
+/* Map */
+.map-box {
+  margin-top: 2rem; height: 200px;
+  border: 0.5px solid rgba(201,168,76,0.15);
+  background: var(--charcoal);
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.map-grid-bg {
+  position: absolute; inset: 0; opacity: 0.12;
+  background-image:
+    repeating-linear-gradient(0deg,   var(--gold) 0, var(--gold) 1px, transparent 1px, transparent 30px),
+    repeating-linear-gradient(90deg,  var(--gold) 0, var(--gold) 1px, transparent 1px, transparent 30px);
+}
+.map-pin-content { position: relative; z-index: 2; text-align: center; }
+.map-pin-icon  { font-size: 1.5rem; color: var(--gold); margin-bottom: 0.5rem; }
+.map-pin-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); }
+.map-directions-btn {
+  position: absolute; bottom: 1rem; right: 1rem; z-index: 2;
+  font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--gold); background: rgba(0,0,0,0.6); padding: 0.4rem 0.8rem;
+  border: 0.5px solid rgba(201,168,76,0.3); transition: background 0.2s;
+}
+.map-directions-btn:hover { background: rgba(201,168,76,0.15); }
+
+/* ── FORM TABS ───────────────────────────────── */
+.form-tabs {
+  display: flex; border-bottom: 0.5px solid rgba(201,168,76,0.2);
+  margin-bottom: 0; margin-top: 4.5rem;
+}
+.form-tab {
+  font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 0.9rem 1.5rem; border: none; background: none; cursor: pointer;
+  color: var(--gray); border-bottom: 1.5px solid transparent;
+  margin-bottom: -0.5px; font-family: var(--font-body);
+  transition: color 0.3s, border-color 0.3s;
+}
+.form-tab.active  { color: var(--gold); border-bottom-color: var(--gold); }
+.form-tab:hover   { color: var(--off-white); }
+
+/* ── CONTACT FORMS ───────────────────────────── */
+.contact-form { display: none; padding-top: 2.5rem; }
+.contact-form.active { display: block; }
+
+/* ── RESPONSIVE ──────────────────────────────── */
+@media (max-width: 768px) {
+  .contact-grid { grid-template-columns: 1fr; gap: 3rem; }
+  .location-bar { padding: 0 1.5rem; }
+  .form-tabs { margin-top: 0; }
+}

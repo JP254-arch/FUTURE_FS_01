@@ -1,0 +1,126 @@
+/* ═══════════════════════════════════════════════
+   AURUM — Gallery Page Styles
+   ═══════════════════════════════════════════════ */
+
+/* ── FILTER BAR ──────────────────────────────── */
+.filter-bar {
+  background: var(--charcoal);
+  border-bottom: 0.5px solid rgba(201,168,76,0.15);
+  padding: 1.25rem 4rem;
+}
+.filter-inner { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.filter-btn {
+  font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 0.5rem 1.1rem; border: 0.5px solid rgba(201,168,76,0.2);
+  background: none; color: var(--gray); cursor: pointer;
+  font-family: var(--font-body); transition: all 0.2s;
+}
+.filter-btn:hover  { color: var(--off-white); border-color: rgba(201,168,76,0.4); }
+.filter-btn.active { color: var(--gold); border-color: var(--gold); background: rgba(201,168,76,0.06); }
+
+/* ── GALLERY SECTION ─────────────────────────── */
+#gallery-section { background: var(--black); padding: 4rem; }
+
+.gallery-container {
+  columns: 3; column-gap: 8px;
+}
+
+.gallery-thumb {
+  break-inside: avoid;
+  margin-bottom: 8px;
+  position: relative; overflow: hidden; cursor: pointer;
+  display: block;
+}
+.gallery-thumb img {
+  width: 100%; display: block;
+  transition: transform 0.5s ease;
+}
+.gallery-thumb:hover img { transform: scale(1.04); }
+
+.gallery-thumb-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 0.5rem;
+  opacity: 0; transition: opacity 0.3s;
+}
+.gallery-thumb:hover .gallery-thumb-overlay { opacity: 1; }
+.gallery-thumb-view {
+  font-size: 0.58rem; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--gold); border: 0.5px solid var(--gold); padding: 0.4rem 1rem;
+}
+.gallery-thumb-cat {
+  font-size: 0.52rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(247,243,236,0.5);
+}
+
+/* Fallback placeholders */
+.gallery-placeholder-item {
+  break-inside: avoid; margin-bottom: 8px;
+  background: var(--charcoal); display: flex; align-items: center;
+  justify-content: center;
+  border: 0.5px solid rgba(201,168,76,0.08);
+}
+.gallery-placeholder-item.tall   { height: 320px; }
+.gallery-placeholder-item.medium { height: 220px; }
+.gallery-placeholder-item.short  { height: 180px; }
+.gallery-placeholder-item span {
+  font-family: var(--font-display); font-style: italic;
+  font-size: 0.95rem; color: rgba(201,168,76,0.25); letter-spacing: 0.1em;
+}
+
+.gallery-placeholder-state {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 1rem;
+  padding: 5rem; color: var(--gray);
+  font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+}
+.loading-ring {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 0.5px solid rgba(201,168,76,0.2);
+  border-top-color: var(--gold);
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── LIGHTBOX ────────────────────────────────── */
+.lightbox {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.95);
+  align-items: center; justify-content: center;
+}
+.lightbox.open { display: flex; }
+.lightbox-img-wrap {
+  max-width: 85vw; max-height: 85vh;
+  display: flex; align-items: center; justify-content: center;
+}
+.lightbox-img-wrap img {
+  max-width: 100%; max-height: 85vh; object-fit: contain;
+  border: 0.5px solid rgba(201,168,76,0.2);
+}
+.lightbox-close {
+  position: absolute; top: 1.5rem; right: 2rem;
+  font-size: 1.2rem; color: var(--gray); background: none; border: none;
+  cursor: pointer; transition: color 0.2s; line-height: 1;
+}
+.lightbox-close:hover { color: var(--gold); }
+.lightbox-prev, .lightbox-next {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  font-size: 2rem; color: var(--gray); background: none; border: none;
+  cursor: pointer; transition: color 0.2s; padding: 1rem;
+}
+.lightbox-prev { left: 1rem; }
+.lightbox-next { right: 1rem; }
+.lightbox-prev:hover, .lightbox-next:hover { color: var(--gold); }
+.lightbox-caption {
+  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--gray); text-align: center;
+}
+
+/* ── RESPONSIVE ──────────────────────────────── */
+@media (max-width: 1024px) { .gallery-container { columns: 2; } }
+@media (max-width: 640px)  {
+  .gallery-container { columns: 1; }
+  .filter-bar { padding: 1rem 1.5rem; }
+  #gallery-section { padding: 3rem 1.5rem; }
+}

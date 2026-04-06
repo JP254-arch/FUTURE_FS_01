@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="The Aurum menu — Antipasti, Primi Piatti, Secondi, and Dolci. Seasonal Italian fine dining in Milan and Paris.">
+  <title>Menu – Aurum Ristorante</title>
+
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/nav.css">
+  <link rel="stylesheet" href="../assets/css/menu.css">
+</head>
+<body data-page="menu">
+
+  <div id="nav-placeholder"></div>
+
+  <!-- PAGE HERO -->
+  <div class="page-hero">
+    <div class="page-hero-bg"></div>
+    <div class="grid-pattern"></div>
+    <div class="page-hero-content">
+      <span class="page-hero-eyebrow">Curated Selections</span>
+      <h1 class="page-hero-title">The <em>Menu</em></h1>
+    </div>
+  </div>
+
+  <!-- ── MENU NOTE ──────────────────────────────── -->
+  <div class="menu-note">
+    <div class="menu-note-inner container">
+      <p>Our menu changes with the seasons. All pasta is made fresh each morning. Ingredients are sourced from family farms in Tuscany, Sardinia, and the Amalfi Coast. Please inform your server of any allergies or dietary requirements.</p>
+      <div class="menu-note-tags">
+        <span class="menu-tag">◆ Vegetarian</span>
+        <span class="menu-tag">◈ Gluten-Free</span>
+        <span class="menu-tag">★ Signature</span>
+        <span class="menu-tag">◎ Seasonal</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MENU SECTIONS ──────────────────────────── -->
+  <section id="menu-section">
+    <div class="menu-inner container">
+
+      <!-- Tabs -->
+      <div class="menu-tabs" id="menu-tabs">
+        <button class="tab-btn active" data-tab="antipasti">Antipasti</button>
+        <button class="tab-btn" data-tab="primi">Primi Piatti</button>
+        <button class="tab-btn" data-tab="secondi">Secondi</button>
+        <button class="tab-btn" data-tab="dolci">Dolci</button>
+        <button class="tab-btn" data-tab="bevande">Bevande</button>
+      </div>
+
+      <!-- Panels - filled by JS -->
+      <div id="menu-panels">
+        <div class="menu-loading">
+          <div class="loading-ring"></div>
+          <span>Loading menu…</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── WINE NOTE ──────────────────────────────── -->
+  <section id="wine-note">
+    <div class="wine-inner container reveal">
+      <div class="wine-icon">◈</div>
+      <h2 class="section-title" style="margin-bottom: 1rem;">The Wine <em>Cellar</em></h2>
+      <p>Our cellar holds over 200 labels — from small-production Barolo and Brunello to aged Champagnes and rare Sardinian vermentino. Our sommelier is happy to suggest pairings for your meal.</p>
+      <div class="wine-divider"></div>
+      <p class="wine-ask">Ask your server for the wine list or request a sommelier consultation.</p>
+    </div>
+  </section>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/menu.js"></script>
+</body>
+</html>

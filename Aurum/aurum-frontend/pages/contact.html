@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Reserve a table or contact Aurum Ristorante in Milan or Paris.">
+  <title>Contact & Reservations – Aurum Ristorante</title>
+
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/nav.css">
+  <link rel="stylesheet" href="../assets/css/contact.css">
+</head>
+<body data-page="contact">
+
+  <div id="nav-placeholder"></div>
+
+  <!-- PAGE HERO -->
+  <div class="page-hero">
+    <div class="page-hero-bg"></div>
+    <div class="grid-pattern"></div>
+    <div class="page-hero-content">
+      <span class="page-hero-eyebrow">Get in Touch</span>
+      <h1 class="page-hero-title">Reserve Your <em>Table</em></h1>
+    </div>
+  </div>
+
+  <!-- ── LOCATION SWITCHER ──────────────────────── -->
+  <div class="location-bar">
+    <div class="location-bar-inner container">
+      <button class="loc-tab active" data-loc="milan">
+        <span class="loc-tab-city">Milan</span>
+        <span class="loc-tab-addr">Via della Luce, 20121</span>
+      </button>
+      <button class="loc-tab" data-loc="paris">
+        <span class="loc-tab-city">Paris</span>
+        <span class="loc-tab-addr">Rue Saint-Honoré, 75001</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── CONTACT GRID ───────────────────────────── -->
+  <section id="contact-section">
+    <div class="contact-grid container">
+
+      <!-- LEFT: Info -->
+      <div class="contact-info reveal">
+
+        <div class="info-block" id="info-address">
+          <div class="info-label">Address</div>
+          <div class="info-value">12 Via della Luce<br>Milan 20121, Italy</div>
+        </div>
+
+        <div class="info-block" id="info-hours">
+          <div class="info-label">Opening Hours</div>
+          <div class="info-value">
+            Tuesday – Sunday<br>
+            Lunch: 12:00 – 15:00<br>
+            Dinner: 19:00 – 23:30<br>
+            <span style="color:var(--gray);font-size:0.75rem;">Closed Mondays</span>
+          </div>
+        </div>
+
+        <div class="info-block" id="info-phone">
+          <div class="info-label">Reservations</div>
+          <div class="info-value"><a href="tel:+390287654321" id="loc-phone-link">+39 02 8765 4321</a></div>
+        </div>
+
+        <div class="info-block">
+          <div class="info-label">Email</div>
+          <div class="info-value"><a href="mailto:reservations@aurum-ristorante.com">reservations@aurum-ristorante.com</a></div>
+        </div>
+
+        <!-- Live status -->
+        <div class="info-status" id="live-status"></div>
+
+        <!-- WhatsApp -->
+        <a class="whatsapp-btn" id="whatsapp-link" href="https://wa.me/390287654321" target="_blank" style="margin-top: 1.5rem;">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.139.563 4.144 1.544 5.879L0 24l6.293-1.519A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.881 0-3.636-.502-5.148-1.373l-.369-.22-3.736.902.937-3.626-.241-.384A9.944 9.944 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+          WhatsApp Us
+        </a>
+
+        <!-- Map -->
+        <div class="map-box" id="map-box">
+          <div class="map-grid-bg"></div>
+          <div class="map-pin-content">
+            <div class="map-pin-icon">◈</div>
+            <div class="map-pin-label" id="map-label">12 Via della Luce · Milano</div>
+          </div>
+          <a class="map-directions-btn" id="map-link" href="https://maps.google.com/?q=Aurum+Ristorante+Milan" target="_blank">Get Directions →</a>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Forms -->
+      <div class="contact-forms reveal reveal-delay-1">
+
+        <!-- Form tabs -->
+        <div class="form-tabs">
+          <button class="form-tab active" data-form="reservation">Reserve a Table</button>
+          <button class="form-tab" data-form="contact">Send a Message</button>
+        </div>
+
+        <!-- RESERVATION FORM -->
+        <form class="contact-form active" id="form-reservation" novalidate>
+          <div class="form-row form-row-duo">
+            <div><input class="form-control" type="text" name="firstName" placeholder="First Name" required></div>
+            <div><input class="form-control" type="text" name="lastName" placeholder="Last Name" required></div>
+          </div>
+          <div class="form-row">
+            <input class="form-control" type="email" name="email" placeholder="Email Address" required>
+          </div>
+          <div class="form-row">
+            <input class="form-control" type="tel" name="phone" placeholder="Phone Number (optional)">
+          </div>
+          <div class="form-row form-row-duo">
+            <div><input class="form-control" type="date" name="date" required></div>
+            <div><input class="form-control" type="number" name="guests" placeholder="Guests" min="1" max="20" required></div>
+          </div>
+          <div class="form-row">
+            <input class="form-control" type="time" name="time" required>
+          </div>
+          <div class="form-row">
+            <select class="form-control" name="occasion">
+              <option value="none">No special occasion</option>
+              <option value="anniversary">Anniversary</option>
+              <option value="birthday">Birthday</option>
+              <option value="business">Business dinner</option>
+              <option value="proposal">Proposal</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <textarea class="form-control" name="requests" placeholder="Dietary requirements, allergies, or special requests…"></textarea>
+          </div>
+          <button type="submit" class="btn-submit" id="btn-reserve">Request Reservation →</button>
+          <div class="form-msg" id="msg-reserve"></div>
+        </form>
+
+        <!-- CONTACT FORM -->
+        <form class="contact-form" id="form-contact" novalidate>
+          <div class="form-row">
+            <input class="form-control" type="text" name="name" placeholder="Your Name" required>
+          </div>
+          <div class="form-row">
+            <input class="form-control" type="email" name="email" placeholder="Email Address" required>
+          </div>
+          <div class="form-row">
+            <input class="form-control" type="text" name="subject" placeholder="Subject">
+          </div>
+          <div class="form-row">
+            <textarea class="form-control" name="message" placeholder="Your message…" style="min-height:160px;" required></textarea>
+          </div>
+          <button type="submit" class="btn-submit" id="btn-contact">Send Message →</button>
+          <div class="form-msg" id="msg-contact"></div>
+        </form>
+
+      </div>
+    </div>
+  </section>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/contact.js"></script>
+</body>
+</html>

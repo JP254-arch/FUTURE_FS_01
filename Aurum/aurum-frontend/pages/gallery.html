@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Gallery – Aurum Ristorante. The dining room, the kitchen, our dishes.">
+  <title>Gallery – Aurum Ristorante</title>
+
+  <link rel="stylesheet" href="../assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/nav.css">
+  <link rel="stylesheet" href="../assets/css/gallery.css">
+</head>
+<body data-page="gallery">
+
+  <div id="nav-placeholder"></div>
+
+  <!-- PAGE HERO -->
+  <div class="page-hero">
+    <div class="page-hero-bg"></div>
+    <div class="grid-pattern"></div>
+    <div class="page-hero-content">
+      <span class="page-hero-eyebrow">Moments at Aurum</span>
+      <h1 class="page-hero-title">The <em>Gallery</em></h1>
+    </div>
+  </div>
+
+  <!-- ── FILTER BAR ─────────────────────────────── -->
+  <div class="filter-bar">
+    <div class="filter-inner container">
+      <button class="filter-btn active" data-cat="all">All</button>
+      <button class="filter-btn" data-cat="dining">Dining Room</button>
+      <button class="filter-btn" data-cat="food">Food</button>
+      <button class="filter-btn" data-cat="kitchen">Kitchen</button>
+      <button class="filter-btn" data-cat="events">Events</button>
+      <button class="filter-btn" data-cat="exterior">Exterior</button>
+    </div>
+  </div>
+
+  <!-- ── GALLERY GRID ───────────────────────────── -->
+  <section id="gallery-section">
+    <div class="gallery-container container" id="gallery-grid">
+      <!-- Filled by JS -->
+      <div class="gallery-placeholder-state">
+        <div class="loading-ring"></div>
+        <span>Loading gallery…</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── LIGHTBOX ───────────────────────────────── -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lb-close">✕</button>
+    <button class="lightbox-prev"  id="lb-prev">‹</button>
+    <button class="lightbox-next"  id="lb-next">›</button>
+    <div class="lightbox-img-wrap">
+      <img src="" alt="" id="lb-img">
+    </div>
+    <div class="lightbox-caption" id="lb-caption"></div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/gallery.js"></script>
+</body>
+</html>
