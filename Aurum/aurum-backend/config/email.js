@@ -24,8 +24,8 @@ const baseTemplate = (content) => `
   </td></tr>
   <tr><td style="padding:40px;color:#F7F3EC;">${content}</td></tr>
   <tr><td style="padding:20px 40px;border-top:0.5px solid rgba(201,168,76,0.15);text-align:center;">
-    <div style="font-size:10px;letter-spacing:0.15em;color:#555;">© 2026 Aurum Ristorante · 12 Via della Luce, Milano</div>
-    <div style="font-size:10px;color:#555;margin-top:6px;">+39 02 8765 4321 · reservations@aurum-ristorante.com</div>
+    <div style="font-size:10px;letter-spacing:0.15em;color:#555;">© 2026 Aurum Ristorante · 12 Via della Luce, Nairobi</div>
+    <div style="font-size:10px;color:#555;margin-top:6px;">+254 740 623 879 · reservations@aurum-ristorante.com</div>
   </td></tr>
 </table>
 </td></tr></table>
@@ -60,9 +60,9 @@ const emailService = {
       </table>
       ${goldBar}
       ${reservation.requests ? `<p style="font-size:12px;color:#aaa;line-height:1.7;"><strong style="color:#C9A84C;">Special requests noted:</strong> ${reservation.requests}</p>` : ''}
-      <p style="font-size:12px;color:#aaa;line-height:1.8;margin-top:20px;">To modify or cancel your reservation, please call us at <span style="color:#C9A84C;">+39 02 8765 4321</span> or reply to this email at least 24 hours in advance.</p>
+      <p style="font-size:12px;color:#aaa;line-height:1.8;margin-top:20px;">To modify or cancel your reservation, please call us at <span style="color:#C9A84C;">+254 740 623 879</span> or reply to this email at least 24 hours in advance.</p>
       <div style="margin-top:28px;text-align:center;">
-        <a href="https://wa.me/390287654321" style="display:inline-block;background:#C9A84C;color:#000;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;padding:14px 32px;text-decoration:none;">WhatsApp Us</a>
+        <a href="https://wa.me/254740623879" style="display:inline-block;background:#C9A84C;color:#000;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;padding:14px 32px;text-decoration:none;">WhatsApp Us</a>
       </div>`;
     return transporter.sendMail({
       from:    process.env.EMAIL_FROM,
@@ -102,7 +102,7 @@ const emailService = {
       <p style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#C9A84C;">We received your message</p>
       <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#F7F3EC;">Thank you, ${contact.name}.</h2>
       ${goldBar}
-      <p style="font-size:13px;color:#aaa;line-height:1.8;">Our team will respond to your enquiry within 24 hours. For urgent matters, please call us directly at <span style="color:#C9A84C;">+39 02 8765 4321</span>.</p>
+      <p style="font-size:13px;color:#aaa;line-height:1.8;">Our team will respond to your enquiry within 24 hours. For urgent matters, please call us directly at <span style="color:#C9A84C;">+254 740 623 879</span>.</p>
       <div style="margin-top:24px;padding:20px;background:rgba(201,168,76,0.05);border-left:2px solid #C9A84C;">
         <p style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#C9A84C;margin:0 0 8px;">Your message</p>
         <p style="font-size:13px;color:#aaa;line-height:1.7;margin:0;font-style:italic;">${contact.message}</p>
@@ -111,6 +111,33 @@ const emailService = {
       from:    process.env.EMAIL_FROM,
       to:      contact.email,
       subject: 'We received your message · Aurum Ristorante',
+      html:    baseTemplate(content),
+    });
+  },
+
+  // ── NEW: notify owner when contact form is submitted ──
+  async sendContactOwnerNotification(contact) {
+    const content = `
+      <p style="font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#C9A84C;">New Contact Message</p>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#F7F3EC;margin:8px 0 20px;">${contact.name}</h2>
+      ${goldBar}
+      <table width="100%" cellpadding="8" cellspacing="0" style="font-size:13px;color:#F7F3EC;">
+        <tr style="border-bottom:0.5px solid rgba(255,255,255,0.06);"><td style="color:#888;width:30%;">From</td><td>${contact.name}</td></tr>
+        <tr style="border-bottom:0.5px solid rgba(255,255,255,0.06);"><td style="color:#888;">Email</td><td><a href="mailto:${contact.email}" style="color:#C9A84C;">${contact.email}</a></td></tr>
+        <tr style="border-bottom:0.5px solid rgba(255,255,255,0.06);"><td style="color:#888;">Subject</td><td>${contact.subject || 'Enquiry'}</td></tr>
+      </table>
+      ${goldBar}
+      <div style="padding:20px;background:rgba(201,168,76,0.05);border-left:2px solid #C9A84C;">
+        <p style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#C9A84C;margin:0 0 8px;">Message</p>
+        <p style="font-size:13px;color:#aaa;line-height:1.7;margin:0;">${contact.message}</p>
+      </div>
+      <div style="margin-top:20px;text-align:center;">
+        <a href="mailto:${contact.email}" style="display:inline-block;background:#C9A84C;color:#000;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;padding:12px 28px;text-decoration:none;">Reply to ${contact.name}</a>
+      </div>`;
+    return transporter.sendMail({
+      from:    process.env.EMAIL_FROM,
+      to:      process.env.NOTIFY_EMAIL,
+      subject: `✉ New Message – ${contact.name} · ${contact.subject || 'Enquiry'}`,
       html:    baseTemplate(content),
     });
   },

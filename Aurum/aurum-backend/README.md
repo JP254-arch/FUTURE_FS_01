@@ -103,13 +103,7 @@ git push -u origin main
 ```
 
 ### Step 3 — Render
-1. Go to https://render.com and sign up (free)
-2. Click **New → Web Service**
-3. Connect your GitHub repository
-4. Render will detect `render.yaml` automatically
-5. Add all environment variables from `.env.example` in the Render dashboard
-6. Click **Deploy**
-7. Your API will be live at: `https://aurum-ristorante-api.onrender.com`
+It's Already deployed
 
 ### Step 4 — Connect Frontend
 In `public/index.html`, update line 1 of the script:

@@ -4,8 +4,7 @@
    ═══════════════════════════════════════════════ */
 
 // ── API CONFIG ───────────────────────────────────────────
-// Change this to your deployed Render URL after deployment
-const API_BASE = 'https://your-backend.onrender.com';
+const API_BASE = "https://aurum-30eg.onrender.com";
 
 // ── API HELPER ───────────────────────────────────────────
 const api = {
@@ -13,13 +12,15 @@ const api = {
     const res = await fetch(`${API_BASE}${path}`);
     return res.json();
   },
+  // Now returns { status, data } so callers can check HTTP status codes
   async post(path, body) {
     const res = await fetch(`${API_BASE}${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    return res.json();
+    const data = await res.json();
+    return { status: res.status, data };
   },
 };
 
@@ -68,9 +69,9 @@ const FOOTER_HTML = `
       </ul>
     </div>
     <div>
-      <div class="footer-col-title">Milano</div>
-      <div class="footer-contact-item"><strong>Address</strong>12 Via della Luce, 20121</div>
-      <div class="footer-contact-item"><strong>Phone</strong>+39 02 8765 4321</div>
+      <div class="footer-col-title">Nairobi</div>
+      <div class="footer-contact-item"><strong>Address</strong>12 st JP Street, 20121</div>
+      <div class="footer-contact-item"><strong>Phone</strong>+254 740 623 879</div>
       <div class="footer-contact-item"><strong>Hours</strong>Tue–Sun 12:00–15:00<br>19:00–23:30</div>
     </div>
     <div>
@@ -92,67 +93,72 @@ const FOOTER_HTML = `
 
 // ── INJECT NAV & FOOTER ──────────────────────────────────
 function injectLayout() {
-  // Nav
-  const navPlaceholder = document.getElementById('nav-placeholder');
+  const navPlaceholder = document.getElementById("nav-placeholder");
   if (navPlaceholder) navPlaceholder.innerHTML = NAV_HTML;
 
-  // Footer
-  const footerPlaceholder = document.getElementById('footer-placeholder');
+  const footerPlaceholder = document.getElementById("footer-placeholder");
   if (footerPlaceholder) footerPlaceholder.innerHTML = FOOTER_HTML;
 
   // Mark active nav link
   const page = document.body.dataset.page;
-  document.querySelectorAll('.nav-links a').forEach(a => {
-    if (a.dataset.page === page) a.classList.add('active');
+  document.querySelectorAll(".nav-links a").forEach((a) => {
+    if (a.dataset.page === page) a.classList.add("active");
   });
 
   // Hamburger toggle
-  const hamburger = document.getElementById('hamburger');
-  const drawer    = document.getElementById('nav-drawer');
+  const hamburger = document.getElementById("hamburger");
+  const drawer = document.getElementById("nav-drawer");
   if (hamburger && drawer) {
-    hamburger.addEventListener('click', () => {
-      hamburger.classList.toggle('open');
-      drawer.classList.toggle('open');
+    hamburger.addEventListener("click", () => {
+      hamburger.classList.toggle("open");
+      drawer.classList.toggle("open");
     });
-    // Close on link click
-    drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
-      hamburger.classList.remove('open');
-      drawer.classList.remove('open');
-    }));
+    drawer.querySelectorAll("a").forEach((a) =>
+      a.addEventListener("click", () => {
+        hamburger.classList.remove("open");
+        drawer.classList.remove("open");
+      })
+    );
   }
 
   // Navbar scroll behaviour
-  const navbar = document.getElementById('navbar');
+  const navbar = document.getElementById("navbar");
   if (navbar) {
-    const onScroll = () => navbar.classList.toggle('scrolled', window.scrollY > 60);
-    window.addEventListener('scroll', onScroll, { passive: true });
+    const onScroll = () =>
+      navbar.classList.toggle("scrolled", window.scrollY > 60);
+    window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
   }
 }
 
 // ── SCROLL REVEAL ────────────────────────────────────────
 function initScrollReveal() {
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-  }, { threshold: 0.1 });
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) e.target.classList.add("visible");
+      });
+    },
+    { threshold: 0.1 }
+  );
+  document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
 }
 
 // ── OPEN / CLOSED BADGE ──────────────────────────────────
-async function renderOpenBadge(targetEl, locationId = 'milan') {
+async function renderOpenBadge(targetEl, locationId = "Nairobi") {
   if (!targetEl) return;
   try {
     const data = await api.get(`/api/locations/${locationId}/hours`);
     if (!data.success) return;
     targetEl.innerHTML = `
-      <span class="open-badge ${data.isOpen ? 'is-open' : 'is-closed'}">
-        ${data.isOpen ? '● Open now' : '● Currently closed'}
+      <span class="open-badge ${data.isOpen ? "is-open" : "is-closed"}">
+        ${data.isOpen ? "● Open now" : "● Currently closed"}
       </span>`;
   } catch {}
 }
 
 // ── INIT ─────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   injectLayout();
   initScrollReveal();
 });

@@ -1,4 +1,6 @@
 require('dotenv').config();
+const dns = require('dns');
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 const express    = require('express');
 const mongoose   = require('mongoose');
 const cors       = require('cors');
@@ -40,11 +42,12 @@ app.use(cors({
 
 // ── RATE LIMITING ───────────────────────────────────────
 const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: { success: false, message: 'Too many requests' } });
-const strictLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10, message: { success: false, message: 'Too many submissions' } });
+const reservationLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10, message: { success: false, message: 'Too many submissions' } });
+const contactLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20, message: { success: false, message: 'Too many submissions. Please wait before trying again.' } });
 
 app.use('/api/', apiLimiter);
-app.use('/api/reservations', strictLimiter);
-app.use('/api/contact', strictLimiter);
+app.use('/api/reservations', reservationLimiter);
+app.use('/api/contact', contactLimiter);
 
 // ── STATIC FILES ────────────────────────────────────────
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

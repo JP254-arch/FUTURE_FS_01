@@ -1,0 +1,38 @@
+const MenuItem = require('../models/menuItem');
+
+// menuService.js
+
+
+async function createMenuItem(menuData) {
+    const menuItem = new MenuItem(menuData);
+    return await menuItem.save();
+}
+
+async function getMenuItems(filter = {}) {
+    return await MenuItem.find(filter)
+        .sort({ category: 1, order: 1, name: 1 })
+        .lean();
+}
+
+async function getMenuItemById(id) {
+    return await MenuItem.findById(id).lean();
+}
+
+async function updateMenuItem(id, updateData) {
+    return await MenuItem.findByIdAndUpdate(id, updateData, {
+        new: true,
+        runValidators: true,
+    }).lean();
+}
+
+async function deleteMenuItem(id) {
+    return await MenuItem.findByIdAndDelete(id).lean();
+}
+
+module.exports = {
+    createMenuItem,
+    getMenuItems,
+    getMenuItemById,
+    updateMenuItem,
+    deleteMenuItem,
+};

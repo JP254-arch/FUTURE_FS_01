@@ -16,10 +16,10 @@ const storage = (dest) => multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+  const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'];
   const ext = path.extname(file.originalname).toLowerCase();
   if (allowed.includes(ext)) cb(null, true);
-  else cb(new Error('Only image files are allowed (jpg, png, webp, gif)'), false);
+  else cb(new Error('Only image files are allowed (jpg, jpeg, png, webp, gif, avif)'), false);
 };
 
 const maxSize = (parseInt(process.env.MAX_FILE_SIZE_MB) || 5) * 1024 * 1024;

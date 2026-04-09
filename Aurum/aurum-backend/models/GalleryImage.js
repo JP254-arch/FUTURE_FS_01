@@ -5,7 +5,7 @@ const gallerySchema = new mongoose.Schema({
   caption:   { type: String },
   filename:  { type: String, required: true },
   url:       { type: String, required: true },
-  category:  { type: String, enum: ['dining','food','kitchen','events','exterior'], default: 'food' },
+  category:  { type: String, enum: ['dining','food','drink','Interior','kitchen','events','exterior'], default: 'food' },
   featured:  { type: Boolean, default: false },
   order:     { type: Number, default: 0 },
 }, { timestamps: true });

@@ -1,14 +1,47 @@
-const express = require('express');
-const router  = express.Router();
-const auth    = require('../middleware/auth');
-const Reservation = require('../models/Reservation');
-const MenuItem    = require('../models/MenuItem');
-const GalleryImage= require('../models/GalleryImage');
-const jwt         = require('jsonwebtoken');
-const Admin       = require('../models/Admin');
+const express = require("express");
+const router = express.Router();
+const auth = require("../middleware/auth");
+const Reservation = require("../models/Reservation");
+const MenuItem = require("../models/MenuItem");
+const GalleryImage = require("../models/GalleryImage");
+const Contact = require("../models/Contact");
+const jwt = require("jsonwebtoken");
+const Admin = require("../models/Admin");
+
+// ── TOAST SYSTEM (injected into every page) ─────────────
+const toastScript = `
+<div id="toast-container" style="position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;"></div>
+<style>
+.toast{pointer-events:all;display:flex;align-items:flex-start;gap:12px;padding:14px 18px;min-width:280px;max-width:380px;border:0.5px solid;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:300;letter-spacing:0.05em;line-height:1.5;animation:toastIn .3s ease;position:relative;overflow:hidden;}
+.toast::after{content:'';position:absolute;bottom:0;left:0;height:2px;background:currentColor;opacity:0.4;animation:toastBar var(--duration,4s) linear forwards;}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(20px)}}
+@keyframes toastBar{from{width:100%}to{width:0%}}
+.toast-success{background:rgba(29,158,117,0.12);border-color:rgba(29,158,117,0.35);color:#1D9E75;}
+.toast-error{background:rgba(192,57,43,0.12);border-color:rgba(192,57,43,0.35);color:#c0392b;}
+.toast-info{background:rgba(201,168,76,0.1);border-color:rgba(201,168,76,0.3);color:#C9A84C;}
+.toast-icon{font-size:15px;flex-shrink:0;margin-top:1px;}
+.toast-body{flex:1;}
+.toast-title{font-weight:500;margin-bottom:2px;letter-spacing:0.1em;text-transform:uppercase;font-size:9px;}
+.toast-msg{color:inherit;opacity:0.85;}
+.toast-close{background:none;border:none;color:inherit;cursor:pointer;opacity:0.5;font-size:14px;padding:0;line-height:1;flex-shrink:0;}
+.toast-close:hover{opacity:1;}
+</style>
+<script>
+function showToast(type, title, message, duration=4000){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  const icons={success:'✓',error:'✕',info:'◈'};
+  t.className='toast toast-'+type;
+  t.style.setProperty('--duration', duration+'ms');
+  t.innerHTML='<span class="toast-icon">'+icons[type]+'</span><div class="toast-body"><div class="toast-title">'+title+'</div><div class="toast-msg">'+message+'</div></div><button class="toast-close" onclick="this.closest(\'.toast\').remove()">×</button>';
+  c.appendChild(t);
+  setTimeout(()=>{t.style.animation='toastOut .3s ease forwards';setTimeout(()=>t.remove(),300);},duration);
+}
+</script>`;
 
 // ── Helper: render full admin page ──────────────────────
-const adminPage = (title, bodyContent, activePage = '') => `<!DOCTYPE html>
+const adminPage = (title, bodyContent, activePage = "") => `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -30,6 +63,7 @@ a{color:inherit;text-decoration:none;}
 .nav-item:hover{color:var(--text);background:rgba(255,255,255,0.03);}
 .nav-item.active{color:var(--gold);background:rgba(201,168,76,0.06);border-right:2px solid var(--gold);}
 .nav-icon{width:16px;text-align:center;font-size:14px;}
+.nav-badge{margin-left:auto;background:var(--danger);color:#fff;font-size:8px;font-weight:500;padding:2px 6px;border-radius:0;letter-spacing:0.05em;}
 .sidebar-footer{padding:16px 20px;border-top:0.5px solid var(--border);}
 .logout-btn{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);background:none;border:0.5px solid rgba(136,136,136,0.3);padding:8px 16px;cursor:pointer;width:100%;transition:color .2s,border-color .2s;font-family:'Montserrat',sans-serif;}
 .logout-btn:hover{color:var(--danger);border-color:var(--danger);}
@@ -60,6 +94,8 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .badge-confirmed{background:rgba(29,158,117,0.12);color:var(--success);}
 .badge-cancelled{background:rgba(192,57,43,0.12);color:var(--danger);}
 .badge-completed{background:rgba(136,136,136,0.12);color:var(--muted);}
+.badge-unread{background:rgba(192,57,43,0.12);color:var(--danger);}
+.badge-read{background:rgba(136,136,136,0.12);color:var(--muted);}
 /* BUTTONS */
 .btn{font-size:9px;letter-spacing:0.2em;text-transform:uppercase;padding:7px 14px;cursor:pointer;border:0.5px solid var(--border);background:none;color:var(--text);font-family:'Montserrat',sans-serif;transition:all .2s;}
 .btn:hover{border-color:var(--gold);color:var(--gold);}
@@ -88,6 +124,14 @@ select option{background:#1a1a1a;}
 .gallery-thumb-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;opacity:0;transition:opacity .2s;}
 .gallery-thumb:hover .gallery-thumb-overlay{opacity:1;}
 .thumb-label{position:absolute;bottom:0;left:0;right:0;padding:6px 8px;background:rgba(0,0,0,0.7);font-size:9px;letter-spacing:0.1em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* MESSAGE CARD */
+.msg-card{border:0.5px solid var(--border);padding:20px;margin-bottom:12px;transition:border-color .2s;background:rgba(255,255,255,0.01);}
+.msg-card.unread{border-color:rgba(201,168,76,0.35);background:rgba(201,168,76,0.03);}
+.msg-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:12px;}
+.msg-meta{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:0.05em;}
+.msg-subject{font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.msg-body{font-size:12px;color:rgba(247,243,236,0.7);line-height:1.7;}
+.msg-actions{display:flex;gap:8px;margin-top:12px;}
 /* ALERTS */
 .alert{padding:12px 16px;margin-bottom:16px;font-size:11px;letter-spacing:0.05em;}
 .alert-success{background:rgba(29,158,117,0.1);border:0.5px solid rgba(29,158,117,0.3);color:var(--success);}
@@ -111,11 +155,12 @@ select option{background:#1a1a1a;}
 <aside class="sidebar">
   <div class="sidebar-logo"><span>Aurum</span><small>Admin Panel</small></div>
   <nav>
-    <a href="/admin" class="nav-item ${activePage==='dashboard'?'active':''}"><span class="nav-icon">◈</span> Dashboard</a>
-    <a href="/admin/reservations" class="nav-item ${activePage==='reservations'?'active':''}"><span class="nav-icon">◻</span> Reservations</a>
-    <a href="/admin/menu" class="nav-item ${activePage==='menu'?'active':''}"><span class="nav-icon">◇</span> Menu</a>
-    <a href="/admin/gallery" class="nav-item ${activePage==='gallery'?'active':''}"><span class="nav-icon">◈</span> Gallery</a>
-    <a href="/admin/locations" class="nav-item ${activePage==='locations'?'active':''}"><span class="nav-icon">◉</span> Locations</a>
+    <a href="/admin" class="nav-item ${activePage === "dashboard" ? "active" : ""}"><span class="nav-icon">◈</span> Dashboard</a>
+    <a href="/admin/reservations" class="nav-item ${activePage === "reservations" ? "active" : ""}"><span class="nav-icon">◻</span> Reservations</a>
+    <a href="/admin/menu" class="nav-item ${activePage === "menu" ? "active" : ""}"><span class="nav-icon">◇</span> Menu</a>
+    <a href="/admin/gallery" class="nav-item ${activePage === "gallery" ? "active" : ""}"><span class="nav-icon">◈</span> Gallery</a>
+    <a href="/admin/messages" class="nav-item ${activePage === "messages" ? "active" : ""}" id="nav-messages"><span class="nav-icon">✉</span> Messages<span id="unread-badge" class="nav-badge" style="display:none;"></span></a>
+    <a href="/admin/locations" class="nav-item ${activePage === "locations" ? "active" : ""}"><span class="nav-icon">◉</span> Locations</a>
   </nav>
   <div class="sidebar-footer">
     <button class="logout-btn" onclick="logout()">Sign Out</button>
@@ -128,15 +173,34 @@ select option{background:#1a1a1a;}
   </div>
   <div class="content">${bodyContent}</div>
 </div>
+${toastScript}
 <script>
 function logout(){fetch('/api/auth/logout',{method:'POST',credentials:'include'}).then(()=>location.href='/admin/login');}
 const el=document.getElementById('current-time');
 if(el){const tick=()=>{el.textContent=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' · '+new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'})};tick();setInterval(tick,1000);}
+
+// ── Poll for unread messages every 30s ──
+async function checkUnread(){
+  try{
+    const r=await fetch('/api/contact',{credentials:'include'});
+    const d=await r.json();
+    if(d.success){
+      const n=d.messages.filter(m=>!m.read).length;
+      const badge=document.getElementById('unread-badge');
+      if(badge){
+        if(n>0){badge.textContent=n;badge.style.display='inline-block';}
+        else{badge.style.display='none';}
+      }
+    }
+  }catch{}
+}
+checkUnread();
+setInterval(checkUnread,30000);
 </script>
 </body></html>`;
 
 // ── LOGIN PAGE ──────────────────────────────────────────
-router.get('/login', (req, res) => {
+router.get("/login", (req, res) => {
   res.send(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin Login · Aurum</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
@@ -178,112 +242,159 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter')login();});
 });
 
 // ── DASHBOARD ───────────────────────────────────────────
-router.get('/', auth, async (req, res) => {
-  const [totalRes, pendingRes, todayRes, totalMenu] = await Promise.all([
+router.get("/", auth, async (req, res) => {
+  const [totalRes, pendingRes, todayRes, totalMenu, unreadMsgs] = await Promise.all([
     Reservation.countDocuments(),
-    Reservation.countDocuments({ status: 'pending' }),
-    Reservation.countDocuments({ date: { $gte: new Date(new Date().setHours(0,0,0,0)), $lt: new Date(new Date().setHours(23,59,59,999)) } }),
+    Reservation.countDocuments({ status: "pending" }),
+    Reservation.countDocuments({
+      date: {
+        $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+        $lt: new Date(new Date().setHours(23, 59, 59, 999)),
+      },
+    }),
     MenuItem.countDocuments({ available: true }),
+    Contact.countDocuments({ read: false }),
   ]);
   const recent = await Reservation.find().sort({ createdAt: -1 }).limit(8);
-  const rows = recent.map(r => `<tr>
+  const rows = recent
+    .map(
+      (r) => `<tr>
     <td>${r.firstName} ${r.lastName}</td>
-    <td>${new Date(r.date).toLocaleDateString('en-GB')}</td>
+    <td>${new Date(r.date).toLocaleDateString("en-GB")}</td>
     <td>${r.time}</td>
     <td>${r.guests}</td>
     <td><span class="badge badge-${r.status}">${r.status}</span></td>
     <td><a href="/admin/reservations" class="btn btn-sm">Manage</a></td>
-  </tr>`).join('');
+  </tr>`
+    )
+    .join("");
 
-  res.send(adminPage('Dashboard', `
+  res.send(
+    adminPage(
+      "Dashboard",
+      `
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-label">Total Reservations</div><div class="stat-val">${totalRes}</div><div class="stat-sub">All time</div></div>
       <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-val" style="color:#C9A84C;">${pendingRes}</div><div class="stat-sub">Awaiting confirmation</div></div>
       <div class="stat-card"><div class="stat-label">Today</div><div class="stat-val" style="color:#1D9E75;">${todayRes}</div><div class="stat-sub">Reservations today</div></div>
-      <div class="stat-card"><div class="stat-label">Menu Items</div><div class="stat-val">${totalMenu}</div><div class="stat-sub">Active dishes</div></div>
+      <div class="stat-card"><div class="stat-label">Unread Messages</div><div class="stat-val" style="color:${unreadMsgs > 0 ? '#c0392b' : '#C9A84C'};">${unreadMsgs}</div><div class="stat-sub"><a href="/admin/messages" style="color:#888;">View inbox</a></div></div>
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Recent Reservations</span><a href="/admin/reservations" class="btn btn-sm">View All</a></div>
       <table><thead><tr><th>Guest</th><th>Date</th><th>Time</th><th>Guests</th><th>Status</th><th></th></tr></thead>
       <tbody>${rows || '<tr><td colspan="6" style="text-align:center;color:#888;padding:24px;">No reservations yet</td></tr>'}</tbody></table>
-    </div>`, 'dashboard'));
+    </div>`,
+      "dashboard"
+    )
+  );
 });
 
 // ── RESERVATIONS ────────────────────────────────────────
-router.get('/reservations', auth, async (req, res) => {
+router.get("/reservations", auth, async (req, res) => {
   const { status, date } = req.query;
   const filter = {};
-  if (status && status !== 'all') filter.status = status;
+  if (status && status !== "all") filter.status = status;
   if (date) {
     const d = new Date(date);
     filter.date = { $gte: d, $lt: new Date(d.getTime() + 86400000) };
   }
-  const reservations = await Reservation.find(filter).sort({ date: 1, time: 1 }).limit(100);
+  const reservations = await Reservation.find(filter)
+    .sort({ date: 1, time: 1 })
+    .limit(100);
 
-  const rows = reservations.map(r => `<tr>
+  const rows = reservations
+    .map(
+      (r) => `<tr>
     <td><strong style="color:#F7F3EC;">${r.firstName} ${r.lastName}</strong><br><small style="color:#888;">${r.email}</small></td>
-    <td>${new Date(r.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</td>
+    <td>${new Date(r.date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}</td>
     <td>${r.time}</td>
     <td>${r.guests}</td>
-    <td>${r.occasion !== 'none' ? r.occasion : '—'}</td>
+    <td>${r.occasion !== "none" ? r.occasion : "—"}</td>
     <td><span class="badge badge-${r.status}">${r.status}</span></td>
     <td>
-      <select onchange="updateStatus('${r._id}',this.value)" style="background:#1a1a1a;border:0.5px solid rgba(201,168,76,0.2);color:#F7F3EC;font-size:9px;letter-spacing:0.1em;padding:4px 6px;cursor:pointer;">
-        <option ${r.status==='pending'?'selected':''}>pending</option>
-        <option ${r.status==='confirmed'?'selected':''}>confirmed</option>
-        <option ${r.status==='cancelled'?'selected':''}>cancelled</option>
-        <option ${r.status==='completed'?'selected':''}>completed</option>
+      <select onchange="updateStatus('${r._id}',this.value,this)" style="background:#1a1a1a;border:0.5px solid rgba(201,168,76,0.2);color:#F7F3EC;font-size:9px;letter-spacing:0.1em;padding:4px 6px;cursor:pointer;">
+        <option ${r.status === "pending" ? "selected" : ""}>pending</option>
+        <option ${r.status === "confirmed" ? "selected" : ""}>confirmed</option>
+        <option ${r.status === "cancelled" ? "selected" : ""}>cancelled</option>
+        <option ${r.status === "completed" ? "selected" : ""}>completed</option>
       </select>
     </td>
     <td><button class="btn btn-sm btn-danger" onclick="deleteRes('${r._id}',this)">Delete</button></td>
-  </tr>`).join('');
+  </tr>`
+    )
+    .join("");
 
-  res.send(adminPage('Reservations', `
+  res.send(
+    adminPage(
+      "Reservations",
+      `
     <div class="filter-row">
       <select onchange="applyFilter()" id="f-status">
-        <option value="all" ${!status||status==='all'?'selected':''}>All Statuses</option>
-        <option value="pending" ${status==='pending'?'selected':''}>Pending</option>
-        <option value="confirmed" ${status==='confirmed'?'selected':''}>Confirmed</option>
-        <option value="cancelled" ${status==='cancelled'?'selected':''}>Cancelled</option>
-        <option value="completed" ${status==='completed'?'selected':''}>Completed</option>
+        <option value="all" ${!status || status === "all" ? "selected" : ""}>All Statuses</option>
+        <option value="pending" ${status === "pending" ? "selected" : ""}>Pending</option>
+        <option value="confirmed" ${status === "confirmed" ? "selected" : ""}>Confirmed</option>
+        <option value="cancelled" ${status === "cancelled" ? "selected" : ""}>Cancelled</option>
+        <option value="completed" ${status === "completed" ? "selected" : ""}>Completed</option>
       </select>
-      <input type="date" id="f-date" value="${date||''}" onchange="applyFilter()">
+      <input type="date" id="f-date" value="${date || ""}" onchange="applyFilter()">
       <button class="btn" onclick="document.getElementById('f-date').value='';applyFilter()">Clear</button>
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Reservations (${reservations.length})</span></div>
       <table><thead><tr><th>Guest</th><th>Date</th><th>Time</th><th>Guests</th><th>Occasion</th><th>Status</th><th>Update</th><th></th></tr></thead>
-      <tbody>${rows||'<tr><td colspan="8" style="text-align:center;color:#888;padding:24px;">No reservations found</td></tr>'}</tbody></table>
+      <tbody>${rows || '<tr><td colspan="8" style="text-align:center;color:#888;padding:24px;">No reservations found</td></tr>'}</tbody></table>
     </div>
     <script>
     function applyFilter(){const s=document.getElementById('f-status').value,d=document.getElementById('f-date').value;location.href='/admin/reservations?status='+s+(d?'&date='+d:'');}
-    async function updateStatus(id,status){const r=await fetch('/api/reservations/'+id+'/status',{method:'PATCH',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({status})});if(!r.ok)alert('Update failed');}
-    async function deleteRes(id,btn){if(!confirm('Delete this reservation?'))return;const r=await fetch('/api/reservations/'+id,{method:'DELETE',credentials:'include'});if(r.ok)btn.closest('tr').remove();else alert('Delete failed');}
-    </script>`, 'reservations'));
+    async function updateStatus(id,status,sel){
+      const r=await fetch('/api/reservations/'+id+'/status',{method:'PATCH',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({status})});
+      if(r.ok){showToast('success','Updated','Reservation marked as '+status+'.');}
+      else{showToast('error','Error','Failed to update status.');sel.value=sel.dataset.prev||sel.value;}
+      sel.dataset.prev=status;
+    }
+    async function deleteRes(id,btn){
+      if(!confirm('Delete this reservation?'))return;
+      const r=await fetch('/api/reservations/'+id,{method:'DELETE',credentials:'include'});
+      if(r.ok){btn.closest('tr').remove();showToast('info','Deleted','Reservation removed.');}
+      else{showToast('error','Error','Could not delete reservation.');}
+    }
+    </script>`,
+      "reservations"
+    )
+  );
 });
 
 // ── MENU MANAGEMENT ─────────────────────────────────────
-router.get('/menu', auth, async (req, res) => {
+router.get("/menu", auth, async (req, res) => {
   const items = await MenuItem.find().sort({ category: 1, order: 1 });
-  const cats = ['antipasti','primi','secondi','dolci','bevande'];
+  const cats = ["antipasti", "primi", "secondi", "dolci", "bevande"];
 
-  const rows = items.map(item => `<tr>
-    <td><strong>${item.name}</strong><br><small style="color:#888;">${item.description.slice(0,50)}…</small></td>
+  const rows = items
+    .map(
+      (item) => `<tr>
+    <td><strong>${item.name}</strong><br><small style="color:#888;">${item.description.slice(0, 50)}…</small></td>
     <td><span class="badge badge-pending">${item.category}</span></td>
     <td style="color:#C9A84C;font-family:'Cormorant Garamond',serif;font-size:16px;">€${item.price.toFixed(2)}</td>
-    <td>${item.tags?.join(', ')||'—'}</td>
+    <td>${item.tags?.join(", ") || "—"}</td>
     <td>
-      <label class="toggle"><input type="checkbox" ${item.available?'checked':''} onchange="toggleAvail('${item._id}',this.checked)"><span class="toggle-slider"></span></label>
+      <label class="toggle"><input type="checkbox" ${item.available ? "checked" : ""} onchange="toggleAvail('${item._id}',this.checked,this)"><span class="toggle-slider"></span></label>
     </td>
     <td>
-      <button class="btn btn-sm" onclick="editItem(${JSON.stringify(item).replace(/"/g,'&quot;')})">Edit</button>
+      <button class="btn btn-sm" onclick="editItem(${JSON.stringify(item).replace(/"/g, "&quot;")})">Edit</button>
       <button class="btn btn-sm btn-danger" onclick="deleteItem('${item._id}',this)">Del</button>
     </td>
-  </tr>`).join('');
+  </tr>`
+    )
+    .join("");
 
-  const catOptions = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  const catOptions = cats
+    .map((c) => `<option value="${c}">${c}</option>`)
+    .join("");
 
-  res.send(adminPage('Menu', `
+  res.send(
+    adminPage(
+      "Menu",
+      `
     <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
       <button class="btn btn-gold" onclick="document.getElementById('add-modal').classList.add('open')">+ Add Item</button>
     </div>
@@ -350,42 +461,63 @@ router.get('/menu', auth, async (req, res) => {
       e.preventDefault();
       const fd=new FormData(e.target);
       const r=await fetch('/api/menu',{method:'POST',credentials:'include',body:fd});
-      if(r.ok){location.reload();}else{const d=await r.json();alert(d.message||'Error');}
+      if(r.ok){showToast('success','Added','Menu item added successfully.');setTimeout(()=>location.reload(),800);}
+      else{const d=await r.json();showToast('error','Error',d.message||'Could not add item.');}
     }
     async function saveItem(e){
       e.preventDefault();
       const id=document.getElementById('edit-id').value;
       const fd=new FormData(e.target);
       const r=await fetch('/api/menu/'+id,{method:'PUT',credentials:'include',body:fd});
-      if(r.ok)location.reload();else{const d=await r.json();alert(d.message||'Error');}
+      if(r.ok){showToast('success','Saved','Item updated successfully.');setTimeout(()=>location.reload(),800);}
+      else{const d=await r.json();showToast('error','Error',d.message||'Could not save item.');}
     }
-    async function deleteItem(id,btn){if(!confirm('Delete this item?'))return;const r=await fetch('/api/menu/'+id,{method:'DELETE',credentials:'include'});if(r.ok)btn.closest('tr').remove();}
-    async function toggleAvail(id,val){await fetch('/api/menu/'+id,{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({available:val})});}
-    </script>`, 'menu'));
+    async function deleteItem(id,btn){
+      if(!confirm('Delete this item?'))return;
+      const r=await fetch('/api/menu/'+id,{method:'DELETE',credentials:'include'});
+      if(r.ok){btn.closest('tr').remove();showToast('info','Deleted','Menu item removed.');}
+      else{showToast('error','Error','Could not delete item.');}
+    }
+    async function toggleAvail(id,val,el){
+      const r=await fetch('/api/menu/'+id,{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({available:val})});
+      if(r.ok){showToast('info','Updated',val?'Item marked available.':'Item marked unavailable.');}
+      else{showToast('error','Error','Could not update availability.');el.checked=!val;}
+    }
+    </script>`,
+      "menu"
+    )
+  );
 });
 
 // ── GALLERY MANAGEMENT ──────────────────────────────────
-router.get('/gallery', auth, async (req, res) => {
+router.get("/gallery", auth, async (req, res) => {
   const images = await GalleryImage.find().sort({ order: 1, createdAt: -1 });
-  const thumbs = images.map(img => `
+  const thumbs = images
+    .map(
+      (img) => `
     <div class="gallery-thumb">
       <img src="${img.url}" alt="${img.title}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect fill=%22%231a1a1a%22 width=%22100%22 height=%22100%22/></svg>'">
       <div class="gallery-thumb-overlay">
         <span class="badge badge-pending">${img.category}</span>
         <button class="btn btn-sm btn-danger" onclick="delImg('${img._id}',this)">Delete</button>
-        ${img.featured?'<span style="font-size:9px;color:#C9A84C;">★ Featured</span>':''}
+        ${img.featured ? '<span style="font-size:9px;color:#C9A84C;">★ Featured</span>' : ""}
       </div>
       <div class="thumb-label">${img.title}</div>
-    </div>`).join('');
+    </div>`
+    )
+    .join("");
 
-  res.send(adminPage('Gallery', `
+  res.send(
+    adminPage(
+      "Gallery",
+      `
     <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
       <button class="btn btn-gold" onclick="document.getElementById('upload-modal').classList.add('open')">+ Upload Image</button>
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Gallery (${images.length} images)</span></div>
       <div style="padding:16px;">
-        <div class="gallery-mgmt">${thumbs||'<p style="color:#888;padding:24px;">No images uploaded yet</p>'}</div>
+        <div class="gallery-mgmt">${thumbs || '<p style="color:#888;padding:24px;">No images uploaded yet</p>'}</div>
       </div>
     </div>
 
@@ -393,18 +525,18 @@ router.get('/gallery', auth, async (req, res) => {
       <div class="modal">
         <div class="modal-title">Upload Image</div>
         <form onsubmit="uploadImg(event)" enctype="multipart/form-data">
-          <div class="form-group"><label>Image File *</label><input name="image" type="file" accept="image/*" required></div>
-          <div class="form-group"><label>Title</label><input name="title" placeholder="e.g. The Dining Room"></div>
-          <div class="form-group"><label>Caption</label><input name="caption" placeholder="Optional caption"></div>
+          <div class="form-group"><label>Image File *</label><input name="image" type="file" accept="image/*" required /></div>
+          <div class="form-group"><label>Title</label><input name="title" placeholder="e.g. The Dining Room" /></div>
+          <div class="form-group"><label>Caption</label><input name="caption" placeholder="Optional caption" /></div>
           <div class="form-group"><label>Category</label>
             <select name="category">
               <option value="food">Food</option><option value="dining">Dining Room</option>
-              <option value="kitchen">Kitchen</option><option value="events">Events</option><option value="exterior">Exterior</option>
+              <option value="kitchen">Kitchen</option><option value="events">Events</option><option value="exterior">Exterior</option><option value="interior">Interior</option><option value="drink">Drink</option>
             </select>
           </div>
           <div class="form-group" style="display:flex;align-items:center;gap:10px;">
             <label style="margin:0;">Featured</label>
-            <label class="toggle"><input type="checkbox" name="featured" value="true"><span class="toggle-slider"></span></label>
+            <label class="toggle"><input type="checkbox" name="featured" value="true" /><span class="toggle-slider"></span></label>
           </div>
           <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px;">
             <button type="button" class="btn" onclick="document.getElementById('upload-modal').classList.remove('open')">Cancel</button>
@@ -418,29 +550,104 @@ router.get('/gallery', auth, async (req, res) => {
       e.preventDefault();
       const fd=new FormData(e.target);
       const r=await fetch('/api/gallery',{method:'POST',credentials:'include',body:fd});
-      if(r.ok)location.reload();else{const d=await r.json();alert(d.message||'Upload failed');}
+      if(r.ok){showToast('success','Uploaded','Image added to gallery.');setTimeout(()=>location.reload(),800);}
+      else{const d=await r.json();showToast('error','Upload Failed',d.message||'Could not upload image.');}
     }
-    async function delImg(id,btn){if(!confirm('Delete this image?'))return;const r=await fetch('/api/gallery/'+id,{method:'DELETE',credentials:'include'});if(r.ok)btn.closest('.gallery-thumb').remove();}
-    </script>`, 'gallery'));
+    async function delImg(id,btn){
+      if(!confirm('Delete this image?'))return;
+      const r=await fetch('/api/gallery/'+id,{method:'DELETE',credentials:'include'});
+      if(r.ok){btn.closest('.gallery-thumb').remove();showToast('info','Deleted','Image removed from gallery.');}
+      else{showToast('error','Error','Could not delete image.');}
+    }
+    </script>`,
+      "gallery"
+    )
+  );
+});
+
+// ── MESSAGES ────────────────────────────────────────────
+router.get("/messages", auth, async (req, res) => {
+  const messages = await Contact.find().sort({ createdAt: -1 }).limit(100);
+  const unreadCount = messages.filter(m => !m.read).length;
+
+  const cards = messages.map(m => `
+    <div class="msg-card ${m.read ? '' : 'unread'}" id="msg-${m._id}">
+      <div class="msg-card-header">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <strong style="font-size:13px;">${m.name}</strong>
+            <span class="badge ${m.read ? 'badge-read' : 'badge-unread'}">${m.read ? 'Read' : 'New'}</span>
+          </div>
+          <div class="msg-meta">${m.email} · ${new Date(m.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' })}</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          ${!m.read ? `<button class="btn btn-sm" onclick="markRead('${m._id}',this)">Mark Read</button>` : ''}
+          <a href="mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject || 'Your Enquiry')}" class="btn btn-sm btn-gold">Reply</a>
+          <button class="btn btn-sm btn-danger" onclick="delMsg('${m._id}',this)">Delete</button>
+        </div>
+      </div>
+      <div class="msg-subject">${m.subject || 'Enquiry'}</div>
+      <div class="msg-body">${m.message}</div>
+    </div>`).join('');
+
+  res.send(adminPage('Messages', `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-size:11px;color:var(--muted);">${unreadCount} unread · ${messages.length} total</div>
+      ${unreadCount > 0 ? `<button class="btn btn-sm" onclick="markAllRead()">Mark All Read</button>` : ''}
+    </div>
+    <div id="messages-list">
+      ${cards || '<div style="text-align:center;padding:48px;color:#888;">No messages yet</div>'}
+    </div>
+    <script>
+    async function markRead(id,btn){
+      const r=await fetch('/api/contact/'+id+'/read',{method:'PATCH',credentials:'include'});
+      if(r.ok){
+        const card=document.getElementById('msg-'+id);
+        card.classList.remove('unread');
+        card.querySelector('.badge').className='badge badge-read';
+        card.querySelector('.badge').textContent='Read';
+        btn.remove();
+        showToast('info','Marked Read','Message marked as read.');
+      }else{showToast('error','Error','Could not update message.');}
+    }
+    async function markAllRead(){
+      const btns=document.querySelectorAll('[onclick^="markRead"]');
+      for(const btn of btns){
+        const id=btn.getAttribute('onclick').match(/'([^']+)'/)[1];
+        await fetch('/api/contact/'+id+'/read',{method:'PATCH',credentials:'include'});
+      }
+      showToast('success','Done','All messages marked as read.');
+      setTimeout(()=>location.reload(),800);
+    }
+    async function delMsg(id,btn){
+      if(!confirm('Delete this message?'))return;
+      const r=await fetch('/api/contact/'+id,{method:'DELETE',credentials:'include'});
+      if(r.ok){document.getElementById('msg-'+id).remove();showToast('info','Deleted','Message deleted.');}
+      else{showToast('error','Error','Could not delete message.');}
+    }
+    </script>`, 'messages'));
 });
 
 // ── LOCATIONS PAGE ──────────────────────────────────────
-router.get('/locations', auth, (req, res) => {
-  res.send(adminPage('Locations', `
+router.get("/locations", auth, (req, res) => {
+  res.send(
+    adminPage(
+      "Locations",
+      `
     <div class="card">
       <div class="card-header"><span class="card-title">Restaurant Locations</span></div>
       <div style="padding:24px;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
           <div style="border:0.5px solid rgba(201,168,76,0.2);padding:24px;">
-            <div style="font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#C9A84C;margin-bottom:12px;">Milan</div>
-            <div style="font-size:18px;font-family:'Cormorant Garamond',serif;margin-bottom:12px;">Aurum Milano</div>
-            <div style="font-size:12px;color:#888;line-height:1.9;">12 Via della Luce<br>Milan 20121, Italy<br>+39 02 8765 4321<br>Tue–Sun: 12:00–15:00, 19:00–23:30</div>
+            <div style="font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#C9A84C;margin-bottom:12px;">Nairobi</div>
+            <div style="font-size:18px;font-family:'Cormorant Garamond',serif;margin-bottom:12px;">Aurum Nairobi</div>
+            <div style="font-size:12px;color:#888;line-height:1.9;">12 Via della Luce<br>Nairobi 00100, Kenya<br>+254 740 623 879<br>Tue–Sun: 12:00–15:00, 19:00–23:30</div>
             <div style="margin-top:12px;"><span class="badge badge-confirmed">Open Today</span></div>
           </div>
           <div style="border:0.5px solid rgba(201,168,76,0.2);padding:24px;">
             <div style="font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#C9A84C;margin-bottom:12px;">Paris</div>
             <div style="font-size:18px;font-family:'Cormorant Garamond',serif;margin-bottom:12px;">Aurum Paris</div>
-            <div style="font-size:12px;color:#888;line-height:1.9;">5 Rue Saint-Honoré<br>Paris 75001, France<br>+33 1 4265 1234<br>Tue–Sun: 12:00–14:30, 19:00–23:00</div>
+            <div style="font-size:12px;color:#888;line-height:1.9;">5 Rue Saint-Honoré<br>Paris 75001, France<br>+254 740 623 879<br>Tue–Sun: 12:00–14:30, 19:00–23:00</div>
             <div style="margin-top:12px;"><span class="badge badge-confirmed">Open Today</span></div>
           </div>
         </div>
@@ -449,7 +656,10 @@ router.get('/locations', auth, (req, res) => {
           <code style="font-size:11px;color:#888;">GET /api/locations · GET /api/locations/:id · GET /api/locations/:id/hours</code>
         </div>
       </div>
-    </div>`, 'locations'));
+    </div>`,
+      "locations"
+    )
+  );
 });
 
 module.exports = router;

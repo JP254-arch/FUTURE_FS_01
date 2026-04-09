@@ -23,7 +23,6 @@ function renderGallery(images) {
   const grid = document.getElementById('gallery-grid');
 
   if (!images.length) {
-    // Placeholder state (no real uploads yet)
     grid.innerHTML = FALLBACK_ITEMS.map(item => `
       <div class="gallery-placeholder-item ${item.height}" data-cat="${item.category}">
         <span>${item.title}</span>
