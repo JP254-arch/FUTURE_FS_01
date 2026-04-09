@@ -135,7 +135,6 @@ function initLocationTabs() {
   });
 }
 
-// ── RESERVATION SUBMIT ────────────────────────────────────
 async function handleReservation(e) {
   e.preventDefault();
   const btn = document.getElementById("btn-reserve");
@@ -150,41 +149,31 @@ async function handleReservation(e) {
   const body = Object.fromEntries(new FormData(form).entries());
 
   try {
-    const data = await api.post("/api/reservations", body);
+    const res = await fetch(`${API_BASE}/api/reservations`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+
     if (data.success) {
-      // Inline message
       msg.className = "form-msg success";
       msg.textContent = `✓ ${data.message} Confirmation: ${data.confirmationId}`;
       form.reset();
       document.querySelector('input[name="date"]').min = new Date()
         .toISOString()
         .split("T")[0];
-      // Toast
-      showToast(
-        "success",
-        "Reservation Requested",
-        `Confirmation ID: ${data.confirmationId}`
-      );
+      showToast("success", "Reservation Requested", `Confirmation ID: ${data.confirmationId}`);
     } else {
-      const err = data.errors
-        ? data.errors.map((e) => e.msg).join(", ")
-        : data.message;
+      const err = data.errors ? data.errors.map((e) => e.msg).join(", ") : data.message;
       msg.className = "form-msg error";
       msg.textContent = err || "Something went wrong. Please try again.";
-      showToast(
-        "error",
-        "Reservation Failed",
-        err || "Please check your details and try again."
-      );
+      showToast("error", "Reservation Failed", err || "Please check your details and try again.");
     }
   } catch {
     msg.className = "form-msg error";
     msg.textContent = "Connection error. Please call us directly.";
-    showToast(
-      "error",
-      "Connection Error",
-      "Please call us or try again later."
-    );
+    showToast("error", "Connection Error", "Please call us or try again later.");
   } finally {
     btn.disabled = false;
     btn.textContent = "Request Reservation →";
